@@ -19,7 +19,27 @@ import UIKit
         print("当前线程详细信息\(Thread.current)")
     }
 }
+//协程
 
+
+
+
+
+// 协程示例：模拟异步获取数据
+func fetchData() async -> String {
+    // 模拟耗时操作（2秒）
+    try? await Task.sleep(nanoseconds: 2 * 1_000_000_000)
+    return "异步数据获取完成"
+}
+
+func coroutineDemo() {
+    print("协程示例开始")
+    Task {
+        let result = await fetchData()
+        print("协程结果：\(result)")
+    }
+    print("主线程继续执行")
+}
 
 class ViewController: UIViewController {
 
@@ -44,12 +64,12 @@ class ViewController: UIViewController {
         Task {
             // 这里无需 await，因为 updateText 不是异步方法，但会自动切换到主线程执行
             demo.updateText(newText: "你好，@MainActor！")
-            
         }
         
-
+        useGenericStorageExample()
         
-        
+        // 调用 Swift 协程示例
+        coroutineDemo()
     }
 }
 
@@ -63,5 +83,38 @@ actor Numberss {
     
     func getValue() -> Int {
         return value
+    }
+}
+
+// 定义一个带关联类型的协议
+protocol StorageProtocol {
+    associatedtype Item: Sendable
+    func store(_ item: Item) async
+    func fetchAll() async -> [Item]
+}
+
+// 泛型 Actor，遵循 StorageProtocol 协议
+//actor GenericStorage<T>: StorageProtocol { 这样写是错误的
+actor GenericStorage<T:Sendable>: StorageProtocol {
+    typealias Item = T
+    private var items: [T] = []
+
+    func store(_ item: T) async {
+        items.append(item)
+    }
+
+    func fetchAll() async -> [T] {
+        return items
+    }
+}
+
+// 使用示例
+func useGenericStorageExample() {
+    let storage = GenericStorage<String>()
+    Task {
+        await storage.store("Hello")
+        await storage.store("Actor & Protocol & Generic")
+        let all = await storage.fetchAll()
+        print("泛型Actor存储内容：\(all)")
     }
 }
