@@ -6,8 +6,7 @@ fn main() {
     println!("Guess the Number");
     
     let secret_number  = rand::rng().random_range(1..= 100);
-    println!("The sectet number is {}",secret_number);
-
+    
     loop {
         println!("Please input your guess");
         
